@@ -2,8 +2,22 @@
   text-align: center;
 }
 
+.App-header {
+  background-color: rgb(11, 138, 155);
+  min-height: 8vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 1vmin);
+  color: black;
+}
+
 .App-logo {
-  height: 40vmin;
+  position: absolute;
+  height: 7vmin;
+  left:2vmin;
+  margin: 1vmin;
   pointer-events: none;
 }
 
@@ -13,21 +27,6 @@
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
@@ -35,4 +34,40 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+
+.game-table {
+  margin-top: 1vmin;
+}
+
+.game-controls{
+  flex-direction: row;
+  display: inline;
+}
+
+.hand{
+  display: flex; 
+  justify-content: center;
+}
+
+.hand-card{
+  width: 15vmin; 
+  height: 'auto'; 
+  margin: 4vmin;
+}
+
+button {
+  border: none;
+  background-color: rgb(11, 138, 155);
+  margin: 2vmin;
+  border-radius: 30px;
+  height: calc(10px + 5vmin);
+  width: calc(80px + 10vmin);
+  font-size: medium;
+  font-weight: bold;
+}
+
+button:hover {
+  color: rgb(243, 200, 8);
 }
