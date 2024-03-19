@@ -3,14 +3,14 @@ import axios from 'axios';
 
 type CardResponse = {
   code: string 
-  image: string, 
+  image: string 
   images: {
     svg: string 
     png: string
   } 
   value: string 
   suit: string
-}
+};
 
 interface DeckCardHand {
   cards: CardResponse[];
@@ -31,40 +31,47 @@ const TheCroupier: React.FC = () => {
   const [deckID, setDeckID] = useState<string|null>(null);
   const [activeGame, setActiveGame] = useState<boolean>(false);
 
-  const [playerCards, setPlayerCards] = useState<DeckCardHand>({cards: []});
-  const [dealerCards, setDealerCards] = useState<DeckCardHand>({cards: []});
+  const [playerCards, setPlayerCards] = useState<DeckCardHand>({cards: []} as DeckCardHand);
+  const [dealerCards, setDealerCards] = useState<DeckCardHand>({cards: []} as DeckCardHand);
 
   const [playerCardCount, setPlayerCardCount] = useState<number>(0);
   const [dealerCardCount, setDealerCardCount] = useState<number>(0);
   
   const setupDeck = async() => {
-    // Get Deck
-    const newDeckEndpoint: string = `https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=${nDecks}`;
-  
-    if(deckID == null) {
-      await axios.get(newDeckEndpoint).then(res => setDeckID(res.data.deck_id)).catch(error => console.error('Error:', error));
-    }
-
-    // Shuffle
-    const shuffleDeckEndpoint: string = `https://deckofcardsapi.com/api/deck/${deckID}/shuffle/`;
-    await axios.get(shuffleDeckEndpoint).then(res => setDeckID(res.data.deck_id)).catch(error => console.error('Error:', error));
-    
     // Set game state to active
     setActiveGame(true);
+
+    // Get Deck 
+    if(deckID == null) {
+      await axios.get(`https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=${nDecks}`
+                ).then(res => setDeckID(res.data.deck_id)
+                ).catch(error => console.error('Error:', error));
+
+      // Shuffle
+      await axios.get(`https://deckofcardsapi.com/api/deck/${deckID}/shuffle/`
+                ).then(res => setDeckID(res.data.deck_id)
+                ).catch(error => console.error('Error:', error));
+    }
   };
 
   const getACard = async(n:number) => {
+    let useID = "";
+    
     if(deckID == null){
-      await setupDeck();
+      let res = await axios.get(`https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=${nDecks}`)
+      useID = res.data.deck_id;
+      setDeckID(useID);
+    } 
+    
+    else {
+      useID = deckID;
     }
     
     // Draw n-cards from the deck
-    const drawFromDeckEndpoint: string = `https://deckofcardsapi.com/api/deck/${deckID}/draw/?count=${n}`;
-    let res = await axios.get(drawFromDeckEndpoint);
-    
+    let res = await axios.get(`https://deckofcardsapi.com/api/deck/${useID}/draw/?count=${n}`);
     return {cards: res.data.cards} as DeckCardHand;
     
-  }
+  };
 
   const mergeHands = (hand1: DeckCardHand, hand2: DeckCardHand): DeckCardHand => {
     return { cards: [...hand1.cards, ...hand2.cards] };
@@ -75,7 +82,7 @@ const TheCroupier: React.FC = () => {
     let aceCount:number = 0;
     
     // Get Card Tags
-    let cardKeys =  hand.cards.map((v, _) => v["code"][0])
+    let cardKeys =  hand.cards.map((v, _) => v["code"][0]);
     
     // Map Card Scores
     cardKeys.forEach(item => {
@@ -84,7 +91,7 @@ const TheCroupier: React.FC = () => {
         aceCount += 1;
       } 
       
-      else if (item == "0" || item === "J" || item === "Q" || item === "K"){
+      else if (item === "0" || item === "J" || item === "Q" || item === "K"){
         cardScores.push(10);
       }
       
@@ -103,7 +110,7 @@ const TheCroupier: React.FC = () => {
       while (score > 21 && aceCount > 0){
         score -= 10;
         aceCount -= 1;
-      };
+      }
     }
 
     // If still bust -> end the game
@@ -115,15 +122,13 @@ const TheCroupier: React.FC = () => {
   };
 
   const clickNewGame = async() => {
-    // Setup New Game
+    // Setup New Game 
     await setupDeck();
-    setPlayerCards({cards: []});
-    setDealerCards({cards: []});
-    
+  
     // Get Cards
     let newCards = await getACard(4);
-    let player = {cards: [newCards.cards[0], newCards.cards[2], ]};
-    let dealer = {cards: [newCards.cards[1], newCards.cards[3], ]};
+    let player = {cards: [newCards.cards[0], newCards.cards[2], ]} as DeckCardHand;
+    let dealer = {cards: [newCards.cards[1], newCards.cards[3], ]} as DeckCardHand;
 
     // Update Hands
     setPlayerCards(player);
@@ -134,7 +139,7 @@ const TheCroupier: React.FC = () => {
     setDealerCardCount(calculateScore(dealer));
 
     // Blackjack Deal Check
-    if(calculateScore(player) == 21 || calculateScore(dealer) == 21){
+    if(calculateScore(player) === 21 || calculateScore(dealer) === 21){
       setActiveGame(false);
     }
   };
@@ -156,11 +161,10 @@ const TheCroupier: React.FC = () => {
     // End active game
     setActiveGame(false);
 
-    // Play out dealer hand to >= 17
     const dealerMin:number = 17;
     let score = calculateScore(dealerCards);
 
-    while(score < 17){
+    while(score < dealerMin){
       let newHand = await getACard(1);
 
       if(dealerCards){
@@ -176,11 +180,10 @@ const TheCroupier: React.FC = () => {
 
 
   return (
-    <div className='game-table'>
+    <div className='game-table'>      
       <div className='game-controls'>
         <button onClick={clickNewGame}>New Game</button>
-      </div>
-      <div className='game-controls'>
+
         {activeGame ? (
           <button onClick={clickHit}>Hit Me</button>
         ) : null}
