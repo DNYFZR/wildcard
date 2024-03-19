@@ -161,16 +161,17 @@ const TheCroupier: React.FC = () => {
     // End active game
     setActiveGame(false);
 
-    const dealerMin:number = 17;
-    let score = calculateScore(dealerCards);
-
+    const dealerMin:number = 18;
+    let hand = dealerCards;
+    let score = calculateScore(hand);
+    
     while(score < dealerMin){
-      let newHand = await getACard(1);
-      setDealerCards(mergeHands(dealerCards, newHand));
-      
-      score = calculateScore(dealerCards);
-      setDealerCardCount(score);
+      hand = mergeHands(hand, await getACard(1));
+      score = calculateScore(hand);
     }
+    
+    setDealerCards(hand);
+    setDealerCardCount(score);
   };
 
 
