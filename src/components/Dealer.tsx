@@ -27,8 +27,8 @@ const DisplayCardHand: React.FC<DeckCardHand> = ({ cards }) => (
 
 const TheCroupier: React.FC = () => {
   
-  const [nDecks, setNDecks] = useState<number>(10);
-  const [deckID, setDeckID] = useState<string|null>(null);
+  const [nDecks, setNDecks] = useState<number>(6);
+  const [deckID, setDeckID] = useState<string|null>("zogkuxg8362d");
   const [activeGame, setActiveGame] = useState<boolean>(false);
 
   const [playerCards, setPlayerCards] = useState<DeckCardHand>({cards: []} as DeckCardHand);
@@ -46,12 +46,12 @@ const TheCroupier: React.FC = () => {
       await axios.get(`https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=${nDecks}`
                 ).then(res => setDeckID(res.data.deck_id)
                 ).catch(error => console.error('Error:', error));
-
-      // Shuffle
-      await axios.get(`https://deckofcardsapi.com/api/deck/${deckID}/shuffle/`
-                ).then(res => setDeckID(res.data.deck_id)
-                ).catch(error => console.error('Error:', error));
     }
+
+    // Shuffle
+    await axios.get(`https://deckofcardsapi.com/api/deck/${deckID}/shuffle/`
+              ).then(res => setDeckID(res.data.deck_id)
+              ).catch(error => console.error('Error:', error));
   };
 
   const getACard = async(n:number) => {
