@@ -2,7 +2,7 @@
 
 This is a playing card games app, blackjack only atm, and has been developed using TS / React.
 
-The app uses the [Deck of Cards API](https://deckofcardsapi.com/) to initialise a 10 deck stack of cards, and then to shuffle and draw from the stack.  
+The app uses the [Deck of Cards API](https://deckofcardsapi.com/) to initialise a 6 deck stack of cards, and then to shuffle and draw from the stack.  
 
 The dealer is set a minimum card total of 18, which is triggered once the player decides to stick.
 
