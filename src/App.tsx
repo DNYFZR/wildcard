@@ -1,18 +1,29 @@
 import React from 'react';
-import logo from './images/poker_chip.png';
 import './App.css';
 
-import TheCroupier from './components/Dealer';
+import logo from './images/poker_chip.png';
+
+import GameSwitch, { ComponentsMap } from './components/GameSwitch';
+import BlackjackDealer from './components/Blackjack';
+import HoldEmDealer from './components/HoldEm';
+
+const gameMap: ComponentsMap = {
+  'BlackJack': () => <BlackjackDealer />,
+  'Texas Hold Em': () => <HoldEmDealer />,
+};
+
 
 function App() {
   return (
     <div className="App">
+
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <h1>WildCard</h1>
+        <h1>WILDCARD </h1>
       </header>
 
-      <TheCroupier />
+      <GameSwitch cmap={gameMap} />
+      
     </div>
   );
 }
