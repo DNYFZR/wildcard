@@ -25,7 +25,7 @@ const DisplayCardHand: React.FC<DeckCardHand> = ({ cards }) => (
   </div>
 );
 
-const TheCroupier: React.FC = () => {
+const BlackjackDealer: React.FC = () => {
   
   const [nDecks, setNDecks] = useState<number>(6);
   const [deckID, setDeckID] = useState<string|null>("zogkuxg8362d");
@@ -178,14 +178,14 @@ const TheCroupier: React.FC = () => {
   return (
     <div className='game-table'>      
       <div className='game-controls'>
-        <button onClick={clickNewGame}>New Game</button>
+        <button className='App-button' onClick={clickNewGame}>New Game</button>
 
         {activeGame ? (
-          <button onClick={clickHit}>Hit Me</button>
+          <button className='App-button' onClick={clickHit}>Hit Me</button>
         ) : null}
 
         {activeGame ? (
-          <button onClick={clickStick}>Stick</button>
+          <button className='App-button' onClick={clickStick}>Stick</button>
         ) : null}
       </div>
 
@@ -208,4 +208,4 @@ const TheCroupier: React.FC = () => {
   );
 };
 
-export default TheCroupier;
+export default BlackjackDealer;
