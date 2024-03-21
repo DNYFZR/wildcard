@@ -57,7 +57,6 @@ button:hover {
 
 .game-winner {
   margin: auto auto;
-  width: 50vmin;
   color: rgb(11, 138, 155);
   border: solid 1px rgb(11, 138, 155);
   border-radius: 30px;
@@ -91,8 +90,8 @@ button:hover {
   border: none;
   border-radius: 30px;
   background-color: rgb(11, 138, 155);
-  height: fit-content;
-  width: fit-content;
+  height: auto;
+  width: 100vmax;
   padding: 1vmin 2vmin;
   font-size: calc(8px + 1vmin);
   font-weight: bold;
@@ -102,7 +101,7 @@ button:hover {
 .cc-button-selected {
   color: rgb(206, 10, 157);
   background-color: black;
-  text-emphasis: bold;
+  font-weight: bold;
   
 }
 
