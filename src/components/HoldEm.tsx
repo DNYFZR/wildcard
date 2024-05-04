@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-type DeckCardResponse = {
+import { Poker } from './Poker';
+
+// function testSomething() {
+//   let game = new Poker();
+//   let p:string[] = [];
+//   game.startGame().then(res => p = res.map((v,_) => v['code']));
+
+//   return p; // game.evaluatePokerHand(game.playerCards) as Map<number, number>;
+  
+// }
+
+
+type PlayingCard = {
   code: string 
   image: string 
   images: {
@@ -12,11 +24,11 @@ type DeckCardResponse = {
   suit: string
 };
 
-interface DeckCardHand {
-  cards: DeckCardResponse[];
+interface PlayingCardSet {
+  cards: PlayingCard[];
 };
 
-type Hand = "Royal Flush" | "Straight Flush" | "Four of a Kind" | "Full House" | "Flush" | 
+type PokerHand = "Royal Flush" | "Straight Flush" | "Four of a Kind" | "Full House" | "Flush" | 
             "Straight" | "Three of a Kind" | "Two Pair" | "Pair" | "High Card";
 
 
@@ -52,7 +64,24 @@ function IsSequential(arr: number[], n: number = 5): boolean {
   return false;
 };
 
-function parseHand(hand:DeckCardHand):string {
+function parseHand(hand:PlayingCardSet):string {
+  // Generate card code map
+  let cardMap = hand.cards.reduce((obj: Record<number, string>, v, i) => {
+    obj[i] = v["code"];
+    return obj;
+  }, {});
+
+  // Generate encodings
+  let cardValues = hand.cards.reduce((obj: Record<number, number>, v, i) => {
+    obj[i] = cardToValue(v["code"]);
+    return obj;
+  }, {}); 
+
+  let cardSuited = hand.cards.reduce((obj: Record<number, number>, v, i) => {
+    obj[i] = suitToValue(v["code"]);
+    return obj;
+  }, {}); 
+  
   // Get Codes
   let cardCodes = hand.cards.map((v, _) => v["code"]);
   
@@ -63,12 +92,9 @@ function parseHand(hand:DeckCardHand):string {
   // Count Values
   let cardValCounts = countValues(cardVals);
 
-  // Bool Filters - need to add comparison of total score of cards for high card situations
-  
-  
+  // Bool Filters   
   const isFlush = Object.values(countValues(cardSuits)).some((item) => item >= 5);
   const isStraight = IsSequential(cardVals.sort((a, b) => a - b));
-  
 
   const isRoyalFlush = isFlush && isStraight && Object.values(cardValCounts).some((item) => item === 14) && 
                         Object.values(cardValCounts).some((item) => item === 10);
@@ -82,6 +108,9 @@ function parseHand(hand:DeckCardHand):string {
   const isPair = Object.values(cardValCounts).filter((item) => item === 2).length === 1;
   const isHighCard = Object.values(cardValCounts).filter((item) => item === 1).length === cardVals.length;
   
+  // Handle high cards / matched hands
+
+
   // collect results
   const handResult = {
     "Royal Flush": isRoyalFlush,
@@ -98,8 +127,8 @@ function parseHand(hand:DeckCardHand):string {
   return Object.entries(handResult).filter((item) => item[1] === true)[0][0];
 };
 
-function scoreHand(hand: Hand): number {
-  const handResult: Record<Hand, number> = {
+function scoreHand(hand: PokerHand): number {
+  const handResult: Record<PokerHand, number> = {
     "Royal Flush": 10,
     "Straight Flush": 9,
     "Four of a Kind": 8, 
@@ -118,28 +147,19 @@ function scoreHand(hand: Hand): number {
 const cardToValue = (code: string): number => {
   let card_val = code[0];
   
-  if(card_val === "A"){
-    return 14;
-  }
-
-  else if(card_val === "K"){
-    return 13;
-  }
-
-  else if(card_val === "Q"){
-    return 12;
-  }
-
-  else if(card_val === "J"){
-    return 11;
-  }
-
-  else if(card_val === "0"){
-    return 10;
-  }
-
-  else{
-    return Number(card_val);
+  switch(card_val){
+    case "A":
+      return 14;
+    case "K":
+      return 13;
+    case "Q":
+      return 12;
+    case "J":
+      return 11;
+    case "0":
+      return 10;
+    default:
+      return Number(card_val);
   }
 };
 
@@ -163,16 +183,38 @@ const suitToValue = (code: string): number => {
   }
 };
 
-
-const HoldEmDealer: React.FC = () => {
+// New
+function processArray(arr: string[], cardToValue: (card: string) => number) {
+  const originalMap = new Map<number, string>();
+  const parsedMap = new Map<number, number>();
   
+  arr.forEach((value, index) => {
+      originalMap.set(index, value);
+      parsedMap.set(index, cardToValue(value));
+  });
+
+  const sortedMap = new Map([...parsedMap.entries()].sort((a, b) => a[1] - b[1]));
+  return { originalMap, parsedMap };
+};
+
+function sortMapValues(map: Map<number,number>) {
+  return new Map([...map.entries()].sort((a, b) => a[1] as number - b[1] as number));
+};
+
+let pkr = new Poker();
+await pkr.startGame();
+await pkr.playRound();
+await pkr.playRound();
+await pkr.playRound();
+
+const HoldEmDealer: React.FC = () => {  
   const [deckID, setDeckID] = useState<string|null>("hfj5xij3cuxy");
   const [activeGame, setActiveGame] = useState<boolean>(false);
   const [betRound, setBetRound] = useState<number>(0);
 
-  const [playerCards, setPlayerCards] = useState<DeckCardHand>({cards: []} as DeckCardHand);
-  const [dealerCards, setDealerCards] = useState<DeckCardHand>({cards: []} as DeckCardHand);
-  const [tableCards, setTableCards] = useState<DeckCardHand>({cards: []} as DeckCardHand);
+  const [playerCards, setPlayerCards] = useState<PlayingCardSet>({cards: []} as PlayingCardSet);
+  const [dealerCards, setDealerCards] = useState<PlayingCardSet>({cards: []} as PlayingCardSet);
+  const [tableCards, setTableCards] = useState<PlayingCardSet>({cards: []} as PlayingCardSet);
 
   const [playerHand, setPlayerHand] = useState<string>("");
   const [dealerHand, setDealerHand] = useState<string>("");
@@ -181,8 +223,11 @@ const HoldEmDealer: React.FC = () => {
   const [dealerScore, setDealerScore] = useState<number>(0);
 
   const [winningPlayer, setWinningPlayer] = useState<string>("");
+  const { originalMap, parsedMap } = processArray(playerCards.cards.map((v, _) => v["code"]), cardToValue);
 
-  const DisplayCardHand: React.FC<DeckCardHand> = ({ cards }) => (
+  const celebration = "🥳🥳🥳 WINNER 🥳🥳🥳";
+
+  const DisplayCardHand: React.FC<PlayingCardSet> = ({ cards }) => (
     // Render the card images
     <div className='hand'>
       {cards.map((card, _) => (
@@ -223,12 +268,12 @@ const HoldEmDealer: React.FC = () => {
     
     // Draw n-cards from the deck
     let res = await axios.get(`https://deckofcardsapi.com/api/deck/${useID}/draw/?count=${n}`);
-    return {cards: res.data.cards} as DeckCardHand;
+    return {cards: res.data.cards} as PlayingCardSet;
     
   };
 
-  const mergeHands = (hands: DeckCardHand[]): DeckCardHand => {
-    return hands.reduce((acc: DeckCardHand, hand: DeckCardHand) => {
+  const mergeHands = (hands: PlayingCardSet[]): PlayingCardSet => {
+    return hands.reduce((acc: PlayingCardSet, hand: PlayingCardSet) => {
         return { cards: [...acc.cards, ...hand.cards] };
     }, { cards: [] });
 };
@@ -240,13 +285,13 @@ const HoldEmDealer: React.FC = () => {
     setWinningPlayer("");
     setPlayerScore(0);
     setDealerScore(0);
-    setTableCards({cards: []} as DeckCardHand);
+    setTableCards({cards: []} as PlayingCardSet);
     await setupDeck();
   
     // Get Cards
     let newCards = await getACard(4);
-    let player = {cards: [newCards.cards[0], newCards.cards[2], ]} as DeckCardHand;
-    let dealer = {cards: [newCards.cards[1], newCards.cards[3], ]} as DeckCardHand;
+    let player = {cards: [newCards.cards[0], newCards.cards[2], ]} as PlayingCardSet;
+    let dealer = {cards: [newCards.cards[1], newCards.cards[3], ]} as PlayingCardSet;
 
     // Update Hands    
     setPlayerCards(player);
@@ -284,8 +329,8 @@ const HoldEmDealer: React.FC = () => {
       setBetRound(0);
       
       // Report Winner
-      let pScore = scoreHand(parseHand(mergeHands([playerCards, tableCards])) as Hand);
-      let dScore = scoreHand(parseHand(mergeHands([dealerCards, tableCards])) as Hand);
+      let pScore = scoreHand(parseHand(mergeHands([playerCards, tableCards])) as PokerHand);
+      let dScore = scoreHand(parseHand(mergeHands([dealerCards, tableCards])) as PokerHand);
       
       setPlayerScore(pScore);
       setDealerScore(dScore);
@@ -302,7 +347,7 @@ const HoldEmDealer: React.FC = () => {
 
   };
 
-
+  
   return (
     <div className='game-table'>      
       <div className='game-controls'>
@@ -313,14 +358,14 @@ const HoldEmDealer: React.FC = () => {
         {dealerCards && dealerCards.cards.length > 0 ? (
           <>
             <DisplayCardHand cards={dealerCards.cards} />
-            <h4>Dealers : {dealerHand}</h4>
+            <h4>House : {dealerHand}</h4>
           </>
         ) : null}
 
         <div className='game-winner'>
           {winningPlayer === "House Wins"   ? (
             <>
-              <h3>{winningPlayer}</h3>
+              <h4>{celebration}</h4>
             </>) : null}
         </div>
 
@@ -333,13 +378,16 @@ const HoldEmDealer: React.FC = () => {
         <div className='game-winner'>
           {winningPlayer === "Player Wins"   ? (
             <>
-              <h3>{winningPlayer}</h3>
+              <h4>{celebration}</h4>
             </>) : null}
         </div>
           
         {playerCards && playerCards.cards.length > 0 ? (
           <> 
-            <h4>Player : {playerHand}</h4>
+            <h4>
+              Player : {playerHand}
+              
+            </h4>
             <DisplayCardHand cards={playerCards.cards} />
             
           </>

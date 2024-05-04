@@ -36,5 +36,9 @@ Future development (things I've thought about anyway) :
 - Multi-game tracking
 - Virtual players (poker)
 
+Other Games ?
+
+- [Crazy 8's](https://en.wikipedia.org/wiki/Crazy_Eights)
+
 ---
 ---
