@@ -1,38 +1,16 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-type CardResponse = {
-  code: string 
-  image: string 
-  images: {
-    svg: string 
-    png: string
-  } 
-  value: string 
-  suit: string
-};
+import DisplayHand, { PlayingCardSet } from './Cards';
 
-interface DeckCardHand {
-  cards: CardResponse[];
-};
-
-const DisplayCardHand: React.FC<DeckCardHand> = ({ cards }) => (
-  // Render the card images
-  <div className='hand'>
-    {cards.map((card, _) => (
-      <img src={card.image} alt={card.code} className='hand-card' />
-    ))}
-  </div>
-);
-
-const BlackjackDealer: React.FC = () => {
+const Blackjack: React.FC = () => {
   
   const [nDecks, setNDecks] = useState<number>(6);
-  const [deckID, setDeckID] = useState<string|null>("zogkuxg8362d");
+  const [deckID, setDeckID] = useState<string|null>();
   const [activeGame, setActiveGame] = useState<boolean>(false);
 
-  const [playerCards, setPlayerCards] = useState<DeckCardHand>({cards: []} as DeckCardHand);
-  const [dealerCards, setDealerCards] = useState<DeckCardHand>({cards: []} as DeckCardHand);
+  const [playerCards, setPlayerCards] = useState<PlayingCardSet>({cards: []} as PlayingCardSet);
+  const [dealerCards, setDealerCards] = useState<PlayingCardSet>({cards: []} as PlayingCardSet);
 
   const [playerCardCount, setPlayerCardCount] = useState<number>(0);
   const [dealerCardCount, setDealerCardCount] = useState<number>(0);
@@ -56,7 +34,7 @@ const BlackjackDealer: React.FC = () => {
 
   const getACard = async(n:number) => {
     let useID = "";
-    
+
     if(deckID == null){
       let res = await axios.get(`https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=${nDecks}`)
       useID = res.data.deck_id;
@@ -69,15 +47,15 @@ const BlackjackDealer: React.FC = () => {
     
     // Draw n-cards from the deck
     let res = await axios.get(`https://deckofcardsapi.com/api/deck/${useID}/draw/?count=${n}`);
-    return {cards: res.data.cards} as DeckCardHand;
+    return {cards: res.data.cards} as PlayingCardSet;
     
   };
 
-  const mergeHands = (hand1: DeckCardHand, hand2: DeckCardHand): DeckCardHand => {
+  const mergeHands = (hand1: PlayingCardSet, hand2: PlayingCardSet): PlayingCardSet => {
     return { cards: [...hand1.cards, ...hand2.cards] };
   };
 
-  const calculateScore = (hand: DeckCardHand): number => {
+  const calculateScore = (hand: PlayingCardSet): number => {
     let cardScores: number[] = [];
     let aceCount:number = 0;
     
@@ -127,8 +105,8 @@ const BlackjackDealer: React.FC = () => {
   
     // Get Cards
     let newCards = await getACard(4);
-    let player = {cards: [newCards.cards[0], newCards.cards[2], ]} as DeckCardHand;
-    let dealer = {cards: [newCards.cards[1], newCards.cards[3], ]} as DeckCardHand;
+    let player = {cards: [newCards.cards[0], newCards.cards[2], ]} as PlayingCardSet;
+    let dealer = {cards: [newCards.cards[1], newCards.cards[3], ]} as PlayingCardSet;
 
     // Update Hands
     setPlayerCards(player);
@@ -189,23 +167,25 @@ const BlackjackDealer: React.FC = () => {
         ) : null}
       </div>
 
-      <div className='game-cards'>
+      <div className='game-hand'>
         {dealerCards && dealerCards.cards.length > 0 ? (
           <>
-            <DisplayCardHand cards={dealerCards.cards} />
             <h4>Dealer : {JSON.stringify(dealerCardCount)}</h4>
+            <DisplayHand cards={dealerCards.cards} />
           </>
         ) : null}
-        
+      </div>
+
+      <div className='game-hand'>
         {playerCards && playerCards.cards.length > 0 ? (
           <> 
-            <DisplayCardHand cards={playerCards.cards} />
             <h4>Player : {JSON.stringify(playerCardCount)}</h4>
+            <DisplayHand cards={playerCards.cards} />
           </>
         ) : null}
-      </div>  
+      </div>
     </div>
   );
 };
 
-export default BlackjackDealer;
+export default Blackjack;
