@@ -1,7 +1,125 @@
-// Poker Minigame 
-import { Dealer, PlayingCard } from './Dealer';
+// Poker Base Class Configuration 
+import { Dealer } from './Dealer';
+import { PlayingCard, PlayingCardSet } from './Cards';
 
-type PokerHand = "Royal Flush" | "Straight Flush" | "Four of a Kind" | "Full House" | "Flush" | 
+export function parseHand(hand:PlayingCardSet):string {
+  const cardToValue = (code: string): number => {
+    let card_val = code[0];
+    
+    switch(card_val){
+      case "A":
+        return 14;
+      case "K":
+        return 13;
+      case "Q":
+        return 12;
+      case "J":
+        return 11;
+      case "0":
+        return 10;
+      default:
+        return Number(card_val);
+    }
+  };
+  
+  const suitToValue = (code: string): number => {
+    let suitVal = code[1];
+    
+    if(suitVal === "S"){
+      return 4;
+    }
+  
+    else if(suitVal === "C"){
+      return 3;
+    }
+  
+    else if(suitVal === "H"){
+      return 2;
+    }
+  
+    else {
+      return 1;
+    }
+  };
+
+  const countValues = (arr:string[] | number[]) => {
+    let countObj: Record<string, number> = {};
+  
+    arr.forEach(item => {
+      if(countObj[item]){
+        countObj[item] += 1;
+      } 
+  
+      else {
+        countObj[item] = 1;
+      }
+    });
+  
+    return countObj;
+  };
+
+  function IsSequential(arr: number[], n: number = 5): boolean {
+    let count = 1;
+    
+    for (let i = 1; i < arr.length; i++) {
+        if (arr[i] - arr[i - 1] === 1) {
+            count++;
+            if (count === n) {
+                return true;
+            }
+        } else {
+            count = 1;
+        }
+    }
+    return false;
+  };
+  
+  // Get Codes
+  let cardCodes = hand.cards.map((v, _) => v["code"]);
+  
+  // Generate Encodings
+  let cardVals = cardCodes.map((v, _) => cardToValue(v));
+  let cardSuits = cardCodes.map((v, _) => suitToValue(v));
+  
+  // Count Values
+  let cardValCounts = countValues(cardVals);
+
+  // Bool Filters   
+  const isFlush = Object.values(countValues(cardSuits)).some((item) => item >= 5);
+  const isStraight = IsSequential(cardVals.sort((a, b) => a - b));
+
+  const isRoyalFlush = isFlush && isStraight && Object.values(cardValCounts).some((item) => item === 14) && 
+                        Object.values(cardValCounts).some((item) => item === 10);
+  const isStraightFlush = isFlush && isStraight;
+
+  const isFullHouse = Object.values(cardValCounts).some((item) => item === 3) && 
+                      Object.values(cardValCounts).some((item) => item === 2);
+  const isFourKind = Object.values(cardValCounts).some((item) => item === 4);
+  const isThreeKind = Object.values(cardValCounts).some((item) => item === 3);
+  const isTwoPair = !isFourKind && !isFullHouse && Object.values(cardValCounts).filter((item) => item === 2).length >= 2;
+  const isPair = Object.values(cardValCounts).filter((item) => item === 2).length === 1;
+  const isHighCard = Object.values(cardValCounts).filter((item) => item === 1).length === cardVals.length;
+  
+  // Handle high cards / matched hands
+
+
+  // collect results
+  const handResult = {
+    "Royal Flush": isRoyalFlush,
+    "Straight Flush": isStraightFlush,
+    "Four of a Kind": isFourKind, 
+    "Full House": isFullHouse,
+    "Flush": isFlush, 
+    "Straight": isStraight,
+    "Three of a Kind": isThreeKind,
+    "Two Pair" : isTwoPair,
+    "Pair": isPair,
+    "High Card" : isHighCard,
+  };
+  return Object.entries(handResult).filter((item) => item[1] === true)[0][0];
+};
+
+export type PokerHand = "Royal Flush" | "Straight Flush" | "Four of a Kind" | "Full House" | "Flush" | 
                   "Straight" | "Three of a Kind" | "Two Pair" | "Pair" | "High Card";
 
 const PokerHandValue: Record<PokerHand, number> = {
@@ -23,24 +141,6 @@ const CardsPerRound: Record<number, number> = {
   3: 1,
 };
 
-function countValues (arr:string[] | number[]) {
-  // Count Values in an Array of strings / numbers 
-  let countObj = new Map<string, number>();
-
-  arr.forEach(item => {
-    item = item as string;
-    let currentVal = countObj.get(item);
-    if(currentVal !== undefined){
-      countObj.set(item, currentVal + 1);
-    } 
-    else {
-      countObj.set(item, 1);
-    }
-  });
-
-  return countObj;
-}
-
 export class Poker {
   gameDealer: Dealer;
   tableCards: PlayingCard[];
@@ -53,8 +153,8 @@ export class Poker {
   dealerCards: PlayingCard[];
   dealerCardCodes!: string[];
 
-  constructor() {
-    this.gameDealer = new Dealer("poker");
+  constructor(deckID:string) {
+    this.gameDealer = new Dealer("poker", deckID, 1);
     this.roundNo = 1;
     this.activeGame = false;
     this.tableCards = [];
@@ -235,3 +335,21 @@ export class Poker {
 }
 
 
+// // Poker Class Implementation 
+// let nDecks = 1;
+// let deckID = "";
+// let deckCheck = await axios.get(`https://deckofcardsapi.com/api/deck/${deckID}/shuffle/`
+//   ).catch(function(){return "Invalid deckID";}
+// );
+
+// if(deckCheck === "Invalid deckID") {
+//   await axios.get(`https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=${nDecks}`
+//     ).then(res => deckID = res.data.deck_id);
+// }
+
+
+// let pkr = new Poker(deckID);
+// await pkr.startGame();
+// await pkr.playRound();
+// await pkr.playRound();
+// await pkr.playRound();
