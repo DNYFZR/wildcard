@@ -1,214 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-import { Poker } from './Poker';
-
-// function testSomething() {
-//   let game = new Poker();
-//   let p:string[] = [];
-//   game.startGame().then(res => p = res.map((v,_) => v['code']));
-
-//   return p; // game.evaluatePokerHand(game.playerCards) as Map<number, number>;
-  
-// }
-
-
-type PlayingCard = {
-  code: string 
-  image: string 
-  images: {
-    svg: string 
-    png: string
-  } 
-  value: string 
-  suit: string
-};
-
-interface PlayingCardSet {
-  cards: PlayingCard[];
-};
-
-type PokerHand = "Royal Flush" | "Straight Flush" | "Four of a Kind" | "Full House" | "Flush" | 
-            "Straight" | "Three of a Kind" | "Two Pair" | "Pair" | "High Card";
-
-
-const countValues = (arr:string[] | number[]) => {
-  let countObj: Record<string, number> = {};
-
-  arr.forEach(item => {
-    if(countObj[item]){
-      countObj[item] += 1;
-    } 
-
-    else {
-      countObj[item] = 1;
-    }
-  });
-
-  return countObj;
-};
-
-function IsSequential(arr: number[], n: number = 5): boolean {
-  let count = 1;
-  
-  for (let i = 1; i < arr.length; i++) {
-      if (arr[i] - arr[i - 1] === 1) {
-          count++;
-          if (count === n) {
-              return true;
-          }
-      } else {
-          count = 1;
-      }
-  }
-  return false;
-};
-
-function parseHand(hand:PlayingCardSet):string {
-  // Generate card code map
-  let cardMap = hand.cards.reduce((obj: Record<number, string>, v, i) => {
-    obj[i] = v["code"];
-    return obj;
-  }, {});
-
-  // Generate encodings
-  let cardValues = hand.cards.reduce((obj: Record<number, number>, v, i) => {
-    obj[i] = cardToValue(v["code"]);
-    return obj;
-  }, {}); 
-
-  let cardSuited = hand.cards.reduce((obj: Record<number, number>, v, i) => {
-    obj[i] = suitToValue(v["code"]);
-    return obj;
-  }, {}); 
-  
-  // Get Codes
-  let cardCodes = hand.cards.map((v, _) => v["code"]);
-  
-  // Generate Encodings
-  let cardVals = cardCodes.map((v, _) => cardToValue(v));
-  let cardSuits = cardCodes.map((v, _) => suitToValue(v));
-  
-  // Count Values
-  let cardValCounts = countValues(cardVals);
-
-  // Bool Filters   
-  const isFlush = Object.values(countValues(cardSuits)).some((item) => item >= 5);
-  const isStraight = IsSequential(cardVals.sort((a, b) => a - b));
-
-  const isRoyalFlush = isFlush && isStraight && Object.values(cardValCounts).some((item) => item === 14) && 
-                        Object.values(cardValCounts).some((item) => item === 10);
-  const isStraightFlush = isFlush && isStraight;
-
-  const isFullHouse = Object.values(cardValCounts).some((item) => item === 3) && 
-                      Object.values(cardValCounts).some((item) => item === 2);
-  const isFourKind = Object.values(cardValCounts).some((item) => item === 4);
-  const isThreeKind = Object.values(cardValCounts).some((item) => item === 3);
-  const isTwoPair = !isFourKind && !isFullHouse && Object.values(cardValCounts).filter((item) => item === 2).length >= 2;
-  const isPair = Object.values(cardValCounts).filter((item) => item === 2).length === 1;
-  const isHighCard = Object.values(cardValCounts).filter((item) => item === 1).length === cardVals.length;
-  
-  // Handle high cards / matched hands
-
-
-  // collect results
-  const handResult = {
-    "Royal Flush": isRoyalFlush,
-    "Straight Flush": isStraightFlush,
-    "Four of a Kind": isFourKind, 
-    "Full House": isFullHouse,
-    "Flush": isFlush, 
-    "Straight": isStraight,
-    "Three of a Kind": isThreeKind,
-    "Two Pair" : isTwoPair,
-    "Pair": isPair,
-    "High Card" : isHighCard,
-  };
-  return Object.entries(handResult).filter((item) => item[1] === true)[0][0];
-};
-
-function scoreHand(hand: PokerHand): number {
-  const handResult: Record<PokerHand, number> = {
-    "Royal Flush": 10,
-    "Straight Flush": 9,
-    "Four of a Kind": 8, 
-    "Full House": 7,
-    "Flush": 6, 
-    "Straight": 5,
-    "Three of a Kind": 4,
-    "Two Pair" : 3,
-    "Pair": 2,
-    "High Card": 1,
-  };
-
-  return handResult[hand];
-};
-
-const cardToValue = (code: string): number => {
-  let card_val = code[0];
-  
-  switch(card_val){
-    case "A":
-      return 14;
-    case "K":
-      return 13;
-    case "Q":
-      return 12;
-    case "J":
-      return 11;
-    case "0":
-      return 10;
-    default:
-      return Number(card_val);
-  }
-};
-
-const suitToValue = (code: string): number => {
-  let suitVal = code[1];
-  
-  if(suitVal === "S"){
-    return 4;
-  }
-
-  else if(suitVal === "C"){
-    return 3;
-  }
-
-  else if(suitVal === "H"){
-    return 2;
-  }
-
-  else {
-    return 1;
-  }
-};
-
-// New
-function processArray(arr: string[], cardToValue: (card: string) => number) {
-  const originalMap = new Map<number, string>();
-  const parsedMap = new Map<number, number>();
-  
-  arr.forEach((value, index) => {
-      originalMap.set(index, value);
-      parsedMap.set(index, cardToValue(value));
-  });
-
-  const sortedMap = new Map([...parsedMap.entries()].sort((a, b) => a[1] - b[1]));
-  return { originalMap, parsedMap };
-};
-
-function sortMapValues(map: Map<number,number>) {
-  return new Map([...map.entries()].sort((a, b) => a[1] as number - b[1] as number));
-};
-
-let pkr = new Poker();
-await pkr.startGame();
-await pkr.playRound();
-await pkr.playRound();
-await pkr.playRound();
+import { PokerHand, parseHand } from './Poker';
+import DisplayHand, { PlayingCardSet } from './Cards';
 
 const HoldEmDealer: React.FC = () => {  
-  const [deckID, setDeckID] = useState<string|null>("hfj5xij3cuxy");
+  const [deckID, setDeckID] = useState<string|null>();
   const [activeGame, setActiveGame] = useState<boolean>(false);
   const [betRound, setBetRound] = useState<number>(0);
 
@@ -223,18 +20,7 @@ const HoldEmDealer: React.FC = () => {
   const [dealerScore, setDealerScore] = useState<number>(0);
 
   const [winningPlayer, setWinningPlayer] = useState<string>("");
-  const { originalMap, parsedMap } = processArray(playerCards.cards.map((v, _) => v["code"]), cardToValue);
-
   const celebration = "🥳🥳🥳 WINNER 🥳🥳🥳";
-
-  const DisplayCardHand: React.FC<PlayingCardSet> = ({ cards }) => (
-    // Render the card images
-    <div className='hand'>
-      {cards.map((card, _) => (
-        <img src={card.image} alt={card.code} className='hand-card' />
-      ))}
-    </div>
-  );
 
   const setupDeck = async() => {
     // Set game state to active
@@ -303,6 +89,23 @@ const HoldEmDealer: React.FC = () => {
   };
 
   const clickCheck = async() => {
+    function scoreHand(hand: PokerHand): number {
+      const handResult: Record<PokerHand, number> = {
+        "Royal Flush": 10,
+        "Straight Flush": 9,
+        "Four of a Kind": 8, 
+        "Full House": 7,
+        "Flush": 6, 
+        "Straight": 5,
+        "Three of a Kind": 4,
+        "Two Pair" : 3,
+        "Pair": 2,
+        "High Card": 1,
+      };
+    
+      return handResult[hand];
+    };
+    
     let round = betRound + 1;
     
     if(round < 4){
@@ -352,18 +155,21 @@ const HoldEmDealer: React.FC = () => {
     <div className='game-table'>      
       <div className='game-controls'>
         <button className='App-button' onClick={clickNewGame}>New Game</button>
+        {activeGame ? (
+            <button className = 'App-button' onClick={clickCheck}>Check</button>
+          ) : null}
       </div>
 
       <div>
         {dealerCards && dealerCards.cards.length > 0 ? (
           <>
-            <DisplayCardHand cards={dealerCards.cards} />
+            <DisplayHand cards={dealerCards.cards} />
             <h4>House : {dealerHand}</h4>
           </>
         ) : null}
 
         <div className='game-winner'>
-          {winningPlayer === "House Wins"   ? (
+          {winningPlayer === "House Wins" ? (
             <>
               <h4>{celebration}</h4>
             </>) : null}
@@ -371,7 +177,7 @@ const HoldEmDealer: React.FC = () => {
 
         {tableCards && tableCards.cards.length > 0 ? (
           <>
-            <DisplayCardHand cards={tableCards.cards} />
+            <DisplayHand cards={tableCards.cards} />
           </>
         ) : null}
 
@@ -388,16 +194,10 @@ const HoldEmDealer: React.FC = () => {
               Player : {playerHand}
               
             </h4>
-            <DisplayCardHand cards={playerCards.cards} />
+            <DisplayHand cards={playerCards.cards} />
             
           </>
         ) : null}
-
-        <div>
-          {activeGame ? (
-            <button className = 'App-button' onClick={clickCheck}>Check</button>
-          ) : null}
-        </div>
         
       </div>
 
