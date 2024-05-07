@@ -167,21 +167,23 @@ const Blackjack: React.FC = () => {
         ) : null}
       </div>
 
-      <div className='game-cards'>
+      <div className='game-hand'>
         {dealerCards && dealerCards.cards.length > 0 ? (
           <>
-            <DisplayHand cards={dealerCards.cards} />
             <h4>Dealer : {JSON.stringify(dealerCardCount)}</h4>
+            <DisplayHand cards={dealerCards.cards} />
           </>
         ) : null}
-        
+      </div>
+
+      <div className='game-hand'>
         {playerCards && playerCards.cards.length > 0 ? (
           <> 
-            <DisplayHand cards={playerCards.cards} />
             <h4>Player : {JSON.stringify(playerCardCount)}</h4>
+            <DisplayHand cards={playerCards.cards} />
           </>
         ) : null}
-      </div>  
+      </div>
     </div>
   );
 };
