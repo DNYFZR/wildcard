@@ -96,7 +96,7 @@ button:hover {
   border-radius: 30px;
   background-color: rgb(11, 138, 155);
   height: 6vmin;
-  width: 100vmax;
+  width: calc(15pc + 3vmin);
   padding: 1vmin 2vmin;
   font-size: calc(8px + 1vmin);
   font-weight: bold;
