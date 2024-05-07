@@ -4,11 +4,11 @@ import './App.css';
 import logo from './images/poker_chip.png';
 
 import GameSwitch, { ComponentsMap } from './components/GameSwitch';
-import BlackjackDealer from './components/Blackjack';
+import Blackjack from './components/Blackjack';
 import HoldEmDealer from './components/HoldEm';
 
 const gameMap: ComponentsMap = {
-  'BlackJack': () => <BlackjackDealer />,
+  'BlackJack': () => <Blackjack />,
   'Texas Hold Em': () => <HoldEmDealer />,
 };
 
