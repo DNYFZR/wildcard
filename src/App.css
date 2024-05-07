@@ -4,7 +4,7 @@ h1 {
 }
 
 h4 {
-  margin: 1.5vmin;
+  margin: auto 0;
 }
 
 button:hover {
@@ -16,26 +16,25 @@ button:hover {
 }
 
 .App-header {
-  background-color: rgb(11, 138, 155);
+  /* background-color: rgb(11, 138, 155); */
   min-height: 8vh;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 1vmin);
-  color: black;
+  /* color: black; */
 }
 
 .App-logo {
   position: absolute;
-  height: 6vmin;
-  top: 2vmin;
-  left:2vmin;
-  margin: 1vmin;
+  left: 0;
+  top: 0;
+  height: 24vmin;
   pointer-events: none;
 }
 
-@media (prefers-reduced-motion: no-preference) {
+/* @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
@@ -48,10 +47,38 @@ button:hover {
   to {
     transform: rotate(360deg);
   }
-}
+} */
 
 .game-table {
   margin-top: 1vmin;
+}
+
+.game-score {
+  margin: 0 auto;
+  justify-content: center;
+  border-radius: 20px;
+  border: 4px dashed gray;
+  width: 50%;
+  padding: calc(2px + 1vmin);
+}
+
+.game-cards {
+  color: rgb(11, 138, 155);
+  display: flex;
+  flex-direction: row;
+  margin: 0 auto;
+  width: 50%;
+  border-top: 1px dashed gray;
+  border-bottom: 1px dashed gray;
+  justify-content: center;  
+}
+
+.game-hand {
+  display: flex;
+  flex-direction: row;
+  margin: 0 auto;
+  width: 50%;
+  justify-content: center;  
 }
 
 .game-controls{
@@ -60,17 +87,8 @@ button:hover {
 }
 
 .game-winner {
-  margin: auto auto;
-  width: 60%;
+  margin: auto 0;
   color: rgb(11, 138, 155);
-  border: solid 1px rgb(11, 138, 155);
-  border-radius: 30px;
-}
-
-.hand{
-  display: inline; 
-  justify-content: center;
-  width: 80vmin;
 }
 
 .hand-card{
@@ -83,7 +101,7 @@ button:hover {
   background-color: rgb(11, 138, 155);
   margin: 1vmin;
   margin-top: 0.5vmin;
-  border-radius: 30px;
+  border-radius: 20px;
   height: calc(10px + 4vmin);
   width: calc(80px + 10vmin);
   font-size: medium;
@@ -92,9 +110,10 @@ button:hover {
 
 /* Component Collection */
 .cc-button {
+  color: gainsboro;
+  background-color: black;
   border: none;
-  border-radius: 30px;
-  background-color: rgb(11, 138, 155);
+  border-radius: 20px;
   height: 6vmin;
   width: calc(15pc + 3vmin);
   padding: 1vmin 2vmin;
@@ -104,13 +123,8 @@ button:hover {
 }
 
 .cc-button-selected {
-  color: rgb(206, 10, 157);
-  background-color: black;
+  background-color: rgb(155, 11, 78);  
   font-weight: bold;
   
-}
-
-.cc-button-selected:hover {
-  color: rgb(206, 10, 157);
 }
 

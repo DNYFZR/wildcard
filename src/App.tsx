@@ -1,15 +1,15 @@
 import React from 'react';
 import './App.css';
 
-import logo from './images/poker_chip.png';
+import logo from './images/burningAce.png';
 
 import GameSwitch, { ComponentsMap } from './components/GameSwitch';
 import Blackjack from './components/Blackjack';
-import HoldEmDealer from './components/HoldEm';
+import TexasHoldEm from './components/HoldEm';
 
 const gameMap: ComponentsMap = {
   'BlackJack': () => <Blackjack />,
-  'Texas Hold Em': () => <HoldEmDealer />,
+  'Texas Hold Em': () => <TexasHoldEm />,
 };
 
 
@@ -18,12 +18,12 @@ function App() {
     <div className="App">
 
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <h1>WILDCARD </h1>
+        <h1>Wildcard</h1>
       </header>
 
+      <img src={logo} className="App-logo" alt="card games app logo" />
       <GameSwitch cmap={gameMap} />
-      
+    
     </div>
   );
 }
