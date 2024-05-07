@@ -4,7 +4,7 @@ import axios from 'axios';
 import { PokerHand, parseHand } from './Poker';
 import DisplayHand, { PlayingCardSet } from './Cards';
 
-const HoldEmDealer: React.FC = () => {  
+const TexasHoldEm: React.FC = () => {  
   const [deckID, setDeckID] = useState<string|null>();
   const [activeGame, setActiveGame] = useState<boolean>(false);
   const [betRound, setBetRound] = useState<number>(0);
@@ -160,49 +160,51 @@ const HoldEmDealer: React.FC = () => {
           ) : null}
       </div>
 
-      <div>
+      <div className='game-hand'>
         {dealerCards && dealerCards.cards.length > 0 ? (
           <>
+            <h4 className='game-winner'>Dealer ( {dealerHand} )</h4>
             <DisplayHand cards={dealerCards.cards} />
-            <h4>House : {dealerHand}</h4>
+
+            <div className='game-winner'>
+              {winningPlayer === "House Wins" ? (
+                <>
+                  <h4> {celebration}</h4>
+                </>) : null}
+            </div>
+
           </>
         ) : null}
-
-        <div className='game-winner'>
-          {winningPlayer === "House Wins" ? (
-            <>
-              <h4>{celebration}</h4>
-            </>) : null}
-        </div>
-
+      </div>
+      
+      <div className='game-cards'>
         {tableCards && tableCards.cards.length > 0 ? (
           <>
+          <h4>Community Cards</h4>
             <DisplayHand cards={tableCards.cards} />
           </>
         ) : null}
-
-        <div className='game-winner'>
-          {winningPlayer === "Player Wins"   ? (
-            <>
-              <h4>{celebration}</h4>
-            </>) : null}
-        </div>
-          
+      </div>
+        
+      <div className='game-hand'> 
         {playerCards && playerCards.cards.length > 0 ? (
           <> 
-            <h4>
-              Player : {playerHand}
-              
-            </h4>
+            <h4 className='game-winner'>Player ( {playerHand} )</h4>
             <DisplayHand cards={playerCards.cards} />
-            
+
+            <div className='game-winner'>
+              {winningPlayer === "Player Wins" ? (
+                <>
+                  <h4>{celebration}</h4>
+                </>) : null}
+            </div>
+
           </>
         ) : null}
-        
       </div>
 
     </div>
   );
 };
 
-export default HoldEmDealer;
+export default TexasHoldEm;
