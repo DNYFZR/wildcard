@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 import { PokerHand, parseHand } from './Poker';
-import DisplayHand, { PlayingCardSet } from './Cards';
+import DisplayHand, { PlayingCardSet } from '../Cards';
 
 const TexasHoldEm: React.FC = () => {  
   const [deckID, setDeckID] = useState<string|null>();

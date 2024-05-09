@@ -5,11 +5,11 @@ import logo from './images/burningAce.png';
 
 import GameSwitch, { ComponentsMap } from './components/GameSwitch';
 import Blackjack from './components/Blackjack';
-import TexasHoldEm from './components/HoldEm';
+import TexasHoldEm from './components/Poker';
 
 const gameMap: ComponentsMap = {
   'BlackJack': () => <Blackjack />,
-  'Texas Hold Em': () => <TexasHoldEm />,
+  'Poker': () => <TexasHoldEm/>,
 };
 
 

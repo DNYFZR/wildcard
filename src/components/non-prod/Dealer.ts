@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { PlayingCard } from './Cards';
+import { PlayingCard } from '../Cards';
 
 export class Dealer {
   deckID: string

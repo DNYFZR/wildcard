@@ -1,6 +1,6 @@
 // Poker Base Class Configuration 
 import { Dealer } from './Dealer';
-import { PlayingCard, PlayingCardSet } from './Cards';
+import { PlayingCard, PlayingCardSet } from '../Cards';
 
 export function parseHand(hand:PlayingCardSet):string {
   const cardToValue = (code: string): number => {
