@@ -1,44 +1,44 @@
-<h2 align="center"> Mini Games </h2>
+<h1 align="center"> Wildcard 🃏</h1>
+
+Wildcard is a card games application, built with Typescript / React, and hosted on [GitHub Pages](https://dnyfzr.github.io/wildcard/) :
+
+- Users can choose which game to play, and then compete against a dealer. The game engine will then implement the rules of the selected game.
+
+- There is no betting functionality within the games as it stands, so in the poker game players are currently given the optiion to check in each round.
+
+- The app uses the [Deck of Cards API](https://deckofcardsapi.com/) to initialise, shuffle & draw cards for each game, and to source the images rendered in the app.  
+
+<h2 align="center"> Games </h2>
 
 ### BlackJack
 
-- Players can start a game with **6** freshly shuffled decks on the table
+- Each game starts with a set of **6** freshly shuffled decks
 
-- The app will track the score and end the game when the player is bust or chooses to stick (the app doesn't currently offer virtual betting)
+- The scoring algorithm operates as the game progresses.
+
+  - Aces are automatically managed to give the player / dealer the largest score without exceeding 21 where possible.
+
+  - As yet, players cannot split hands when dealt a pair, this will be looked at in an update for the game though.
+
+  - As betting is not part of the game, there is no "double down" feature.
+
+- A game ends when the player is bust or chooses to stick.
+
+  - If blackjack is drawn by the player / dealer, the game is ended with that hand winning.
 
 - The dealer is set a minimum card total of 18, which is triggered once the player decides to stick.
 
 ### Texas Hold Em
 
-- Players can start a game with **1** freshly shuffled deck on the table
+- This game starts with **1** freshly shuffled deck on the table
 
-- The app will determine the best hand available to the player & dealer given the cards on the table (see note below)
+- The scoring algorithm will determine the best hand available for the player & dealer given the cards on the table and in hand.
+
+  - The evaluation functionality is still being developed, and while the majority of hands & games will be scored correctly, there are cases where the application will declare the wrong winner.
   
-- When the final card has been laid, and the player checks, the game will end, and the app will display a winner banner on the winning side of the table (see note below)
+- A game ends when the player checks after the final card has been laid.
 
-**NOTE :** The hand evaluation functionality is still being developed, so there are some gaps. If the cards available to you form a flush, and separately a straight, it will think you have a straight flush, so you'll probably win that round, same goes for the dealer.
-
-<h2 align="center"> Developer Notes </h2>
-
-This minigames app is developed using Typescript & React, and is deployed via [Github Pages](https://dnyfzr.github.io/wildcard/)
-
-The app uses the [Deck of Cards API](https://deckofcardsapi.com/) to initialise, shuffle and draw card for each game.  
-
-Future development (things I've thought about anyway) :
-
-- Ace low straight identification (poker)
-- Matched hand card scoring (poker)
-  - e.g. AAA88 vs QQQKK -> [14,14,14,8,8] vs [12,12,12,13,13] ->
-    14 vs 12 & 8 vs 13 -> first hand has higher triplet etc.
-- Hand splitting on pair deals (blackjack)
-- Double down hit (blackjack)
-- Virtual betting in games
-- Multi-game tracking
-- Virtual players (poker)
-
-Other Games ?
-
-- [Crazy 8's](https://en.wikipedia.org/wiki/Crazy_Eights)
+  - the app will display a winner banner on the winning side of the table.
 
 ---
 ---

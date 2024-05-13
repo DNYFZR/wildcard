@@ -1,10 +1,8 @@
+// Poker Minigame Component
+
 import React, { useState } from 'react';
 import axios from 'axios';
-
 import DisplayHand, { PlayingCardSet } from './Cards';
-
-type PokerHand = "Royal Flush" | "Straight Flush" | "Four of a Kind" | "Full House" | "Flush" | 
-                  "Straight" | "Three of a Kind" | "Two Pair" | "Pair" | "High Card";
 
 const TexasHoldEm: React.FC = () => {  
   const [deckID, setDeckID] = useState<string|null>(null);
@@ -14,9 +12,6 @@ const TexasHoldEm: React.FC = () => {
   const [playerCards, setPlayerCards] = useState<PlayingCardSet>({cards: []} as PlayingCardSet);
   const [dealerCards, setDealerCards] = useState<PlayingCardSet>({cards: []} as PlayingCardSet);
   const [tableCards, setTableCards] = useState<PlayingCardSet>({cards: []} as PlayingCardSet);
-
-  const [playerCodes, setPlayerCodes] = useState<[string, string][]>([]);
-  const [dealerCodes, setDealerCodes] = useState<[string, string][]>([]);
 
   const [playerHand, setPlayerHand] = useState<string>("");
   const [dealerHand, setDealerHand] = useState<string>("");
@@ -30,34 +25,33 @@ const TexasHoldEm: React.FC = () => {
   const setupDeck = async() => {
     // Set game state to active
     setActiveGame(true);
+    let useID = deckID;
 
-    // Get Deck 
+    // Get New Deck 
     if(deckID === null) {
       await axios.get("https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1"
-                ).then(res => setDeckID(res.data.deck_id)
+                ).then(res => useID = res.data.deck_id
                 ).catch(error => console.error('Error:', error));
     }
 
     // Shuffle
-    await axios.get(`https://deckofcardsapi.com/api/deck/${deckID}/shuffle/`
-              ).then(res => setDeckID(res.data.deck_id)
+    await axios.get(`https://deckofcardsapi.com/api/deck/${useID}/shuffle/`
               ).catch(error => console.error('Error:', error));
+
+    // Updated deckID
+    setDeckID(useID);
   };
 
   const getACard = async(n:number) => {
-    let useID = "";
-    
-    if(deckID == null){
-      let res = await axios.get("https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1")
-      useID = res.data.deck_id;
-      setDeckID(useID);
-    } 
-    
-    else {
-      useID = deckID;
-    }
-    
     // Draw n-cards from the deck
+    let useID = deckID;
+
+    if(useID === null){
+      await axios.get("https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1"
+        ).then(res => useID = res.data.deck_id
+        ).catch(error => console.error('Error:', error));
+    };
+
     let res = await axios.get(`https://deckofcardsapi.com/api/deck/${useID}/draw/?count=${n}`);
     return {cards: res.data.cards} as PlayingCardSet;
     
@@ -70,58 +64,47 @@ const TexasHoldEm: React.FC = () => {
   };
 
   const cardValue = (code: string, ace_high:boolean=true): number => {
-    if (ace_high === true){
-      switch(code){
-        case "ACE":
-          return 14;
-        case "KING":
-          return 13;
-        case "QUEEN":
-          return 12;
-        case "JACK":
-          return 11;
-        default:
-          return Number(code);
-      }
-    } else {
-      switch(code){
-        case "ACE":
-          return 1;
-        case "KING":
-          return 13;
-        case "QUEEN":
-          return 12;
-        case "JACK":
-          return 11;
-        default:
-          return Number(code);
-      }
+    switch(code){
+      case "ACE":
+        if(ace_high === true){return 14;} else {return 1;}
+      case "KING":
+        return 13;
+      case "QUEEN":
+        return 12;
+      case "JACK":
+        return 11;
+      default:
+        return Number(code);
     }
-    
   };
 
   const hasFlush = (cards: (string | number)[][]): (string | number)[][] => {
     let scored = [] as (string | number)[][];
+    
     for (let cardSuit in ["CLUBS", "DIAMONDS", "HEARTS", "SPADES"]){
-      if ( cards.filter(([suit, _]) => suit === cardSuit).length >= 5){
-        return scored.filter(([suit, _]) => suit === cardSuit)
+    
+      let suitedCards = cards.filter(([suit, _]) => String(suit) === cardSuit);
+      if ( suitedCards.length >= 5){
+        return suitedCards.slice(-5);
       }
-    }    
+    } 
     return scored;
   };
 
-  const hasStraight = (cards: (string | number)[][]): (string | number)[][] => {  
+  const hasStraight = (cards: (string | number)[][]): (string | number)[][] => {     
     let scored = [] as (string | number)[][];
-    
+
     for (let i = 1; i < cards.length; i++){
-      let cur_val = cards[i];
-      let last_val = cards[i - 1];
-    
-      if (cur_val[1] as number - 1 === last_val[1] && cur_val[1] as number === scored.at(-1)?.at(1) as number + 1){
-        if(i === 1){ // add starting value in first iter 
-          scored.push(last_val)
-        }
-        scored.push(cur_val);
+      let cur_set = cards[i];
+      let cur_val = Number(cur_set[1]);
+
+      let last_set = cards[i - 1];
+      let last_val = Number(last_set[1]);
+
+      if (cur_val === (last_val + 1) && (scored.length === 0 || last_val === scored.at(-1)?.at(1)) ){
+        scored.pop();  
+        scored.push(last_set);       
+        scored.push(cur_set);
       }
     }
     
@@ -162,82 +145,105 @@ const TexasHoldEm: React.FC = () => {
     return scored;
   };
 
-  const evaluateHand = (hand: [string, string][]) => {
-    // New scoring method...
-    let cards = hand.map(([suit, val]) => [suit, cardValue(val, true)]).sort((a, b) => Number(a[1]) - Number(b[1]))
-    
-    // Still need to do : straights (aces high & low) & high card comparisons (all relevant hands)
+  const getHighCard = (hand: (string | number)[][], allCards: (string | number)[][], withinHand:boolean, rank:number=1): number => {
+    if(withinHand){
+      return hand.map(([_, v]) => v).at(-rank) as number / 100;      
+    }
+    return allCards.filter(([s,v]) => hand.includes([s,v]) === withinHand).map(([_, v]) => v).at(-rank) as number / 100;
+  };
 
+  const evaluateHand = (hand: [string, string][], acesHigh:boolean=true) => {
+    // Still need to do : straights (aces high & low)
+    let cards = hand.map(([suit, val]) => [suit, cardValue(val, acesHigh)]).sort((a, b) => Number(a[1]) - Number(b[1]))
+    
     // Royal Flush
     if(hasStraight(hasFlush(cards)).length > 0 && hasStraight(hasFlush(cards)).slice(-1).at(1) as unknown === 14){
-      // return hasStraight(hasFlush(cards));
-      return ["Royal Flush", 10.14];
+      let hand = hasStraight(hasFlush(cards));
+      let score = 10 + getHighCard(hand, cards, true)
+      return ["Royal Flush", score]; 
     }
 
     // Striaght Flush
     if(hasStraight(hasFlush(cards)).length > 0){
       let hand = hasStraight(hasFlush(cards));
-      let highCard = cards.filter(([s,v]) => hand.includes([s,v])).map(([_, v]) => v).at(-1) as number / 100
-      return ["Straight Flush", 9 + highCard];
+      let score = 9 + getHighCard(hand, cards, true);
+      return ["Straight Flush", score]
     }
 
     // Four of a kind
     if(hasQuad(cards).length > 0){
       let hand = hasQuad(cards);
-      let highCard = cards.filter(([s,v]) => hand.includes([s,v]) === false).map(([_, v]) => v).at(-1) as number / 100
-      return ["Four of a Kind", 8 + highCard];
+      let score = 8 + getHighCard(hand, cards, true) + getHighCard(hand, cards, false);
+      return ["Four of a Kind", score];
     } 
     
     // Full House
-    if(hasTriple(cards).length > 0 && hasPair(cards).length > 0){
+    if(hasTriple(cards).length === 2 || (hasTriple(cards).length > 0 && hasPair(cards).length > 0)){
       let hand =  [...hasTriple(cards), ...hasPair(cards)];
-      let highCard = cards.filter(([s,v]) => hand.includes([s,v]) === false).map(([_, v]) => v).at(-1) as number / 100
-      return ["Full House", 7 + highCard];
+      let score = 7;
+      
+      for(let i = 0; i < hand.length; i++){
+        score = score + getHighCard(hand, cards, true, i)
+      };
+
+      return ["Full House", score];
     }
 
     // Flush
     if(hasFlush(cards).length > 0){
       let hand = hasFlush(cards);
-      let highCard = cards.filter(([s,v]) => hand.includes([s,v])).map(([_, v]) => v).at(-1) as number / 100
-      return ["Flush", 6 + highCard];
+      let score = 6;
+      
+      for(let i = 0; i < hand.length; i++){
+        score = score + getHighCard(hand, cards, true, i)
+      };
+
+      return ["Flush", score];
     }
 
     // Straight
     if(hasStraight(cards).length > 0){
       let hand =  hasStraight(cards);
-      let highCard = cards.filter(([s,v]) => hand.includes([s,v])).map(([_, v]) => v).at(-1) as number / 100
-      return ["Straight", 5 + highCard];
+      return ["Straight", 5 + getHighCard(hand, cards, true)];
     }
 
     // Three of a kind
     if(hasTriple(cards).length > 0){
       let hand =  hasTriple(cards);
-      let highCard = cards.filter(([s,v]) => hand.includes([s,v]) === false).map(([_, v]) => v).at(-1) as number / 100
-      return ["Three of a Kind", 4 + highCard];
+      return ["Three of a Kind", 4 + getHighCard(hand, cards, true) + getHighCard(hand, cards, false) + getHighCard(hand, cards, false, 2)];
     }
 
     // Two Pair
     if(hasPair(cards).length >= 4){
       let hand = hasPair(cards)
-      let highCard = cards.filter(([s,v]) => hand.includes([s,v]) === false).map(([_, v]) => v).at(-1) as number / 100
-      return ["Two Pair", 3 + highCard];
+      let score = 3 + getHighCard(hand, cards, true) + getHighCard(hand, cards, true, 2) + getHighCard(hand, cards, false);
+      return ["Two Pair", score];
     } 
     
     // Single Pair
     if(hasPair(cards).length >= 2){
       let hand = hasPair(cards)
-      let highCard = cards.filter(([s,v]) => hand.includes([s,v]) === false).map(([_, v]) => v).at(-1) as number / 100
-      return ["Pair", Number((2 + highCard).toFixed(2))];
+      let score = 2 + getHighCard(hand, cards, true);
+      
+      for(let i = 0; i < Math.min(cards.length, 4); i++){
+        score = score + getHighCard(hand, cards, false, i)
+      };
+
+      return ["Pair", score];
     } 
     
     // High Card
     else { 
-      // if(cards.length > 5){
-      //   return cards.slice(-5)
-      // } else{
-      //   return cards
-      // }
-      return ["High Card", Number((1 + (cards.map(([_, v]) => v).at(-1) as number / 100 )).toFixed(2))];
+      if(cards.length >= 5){
+        cards = cards.slice(-5)
+      }
+
+      let score = 1;
+      for(let i = 0; i < cards.length; i++){
+        score = score + getHighCard(hand, cards, false, i)
+      };
+
+      return ["High Card", score];
     }
   };
 
@@ -246,8 +252,6 @@ const TexasHoldEm: React.FC = () => {
     setActiveGame(true);
     setWinningPlayer("");
     setBetRound(0);
-    setPlayerScore(0);
-    setDealerScore(0);
 
     setTableCards({cards: []} as PlayingCardSet);
     await setupDeck();
@@ -264,8 +268,6 @@ const TexasHoldEm: React.FC = () => {
     // Analyse card codes
     let pCodes: [string, string][] = player.cards.map((v, _) => [v["suit"], v["value"]]);
     let dCodes: [string, string][] = dealer.cards.map((v, _) => [v["suit"], v["value"]]);
-    setPlayerCodes(pCodes);
-    setDealerCodes(dCodes);
 
     // Update hand & score
     let pHand = evaluateHand(pCodes);
@@ -280,22 +282,6 @@ const TexasHoldEm: React.FC = () => {
   };
 
   const clickCheck = async() => {
-    function scoreHand(hand: PokerHand): number {
-      const handResult: Record<PokerHand, number> = {
-        "Royal Flush": 10,
-        "Straight Flush": 9,
-        "Four of a Kind": 8, 
-        "Full House": 7,
-        "Flush": 6, 
-        "Straight": 5,
-        "Three of a Kind": 4,
-        "Two Pair" : 3,
-        "Pair": 2,
-        "High Card": 1,
-      };
-    
-      return handResult[hand];
-    };
     // Determine n-cards required for table    
     let n = 1;
     let round = betRound + 1
@@ -315,8 +301,6 @@ const TexasHoldEm: React.FC = () => {
       // Update codes
       let pCodes: [string, string][] = mergeHands([playerCards, tableCards, hand]).cards.map((v, _) => [v["suit"], v["value"]]);
       let dCodes: [string, string][] = mergeHands([dealerCards, tableCards, hand]).cards.map((v, _) => [v["suit"], v["value"]]);
-      setPlayerCodes(pCodes);
-      setDealerCodes(dCodes);
 
       // Update hands & score
       let pHand = evaluateHand(pCodes);
@@ -327,24 +311,23 @@ const TexasHoldEm: React.FC = () => {
 
       setPlayerHand(pHand.at(0) as string);
       setDealerHand(dHand.at(0) as string);
-
     }
+
     // Final round
     if (round === 4) {
       setActiveGame(false);
       let pScore = Number(playerScore.toFixed(2));
       let dScore = Number(dealerScore.toFixed(2))
       
-      if( pScore > dScore){
-        setWinningPlayer("Player Wins");
-      } else if(pScore === dScore) {
+      if( pScore >= dScore){
         setWinningPlayer("Player Wins");
       } else {
         setWinningPlayer("House Wins");
       }
-    } else {
-      setBetRound(betRound + 1);
     }
+
+    // Update round
+    setBetRound(round);
   };
 
   return (
@@ -359,7 +342,7 @@ const TexasHoldEm: React.FC = () => {
       <div className='game-hand'>
         {dealerCards && dealerCards.cards.length > 0 ? (
           <>
-            <h4 className='game-winner'>Dealer ( {dealerHand} )</h4>
+            <h4 className='game-winner'>Dealer ( {dealerHand} - Strength: {dealerScore.toFixed(2)} )</h4>
             <DisplayHand cards={dealerCards.cards} />
 
             <div className='game-winner'>
@@ -385,7 +368,7 @@ const TexasHoldEm: React.FC = () => {
       <div className='game-hand'> 
         {playerCards && playerCards.cards.length > 0 ? (
           <> 
-            <h4 className='game-winner'>Player ( {playerHand} )</h4>
+            <h4 className='game-winner'>Player ( {playerHand} - Strength: {playerScore.toFixed(2)} )</h4>
             <DisplayHand cards={playerCards.cards} />
 
             <div className='game-winner'>
