@@ -210,22 +210,22 @@ const TexasHoldEm: React.FC = () => {
     // Three of a kind
     if(hasTriple(cards).length > 0){
       let hand =  hasTriple(cards);
-      return ["Three of a Kind", 4 + getHighCard(hand, cards, true) + getHighCard(hand, cards, false) + getHighCard(hand, cards, false, 2)];
+      return ["Three of a Kind", 4 + getHighCard(hand, cards, true) * 3 + getHighCard(hand, cards, false) + getHighCard(hand, cards, false, 2)];
     }
 
     // Two Pair
     if(hasPair(cards).length >= 4){
       let hand = hasPair(cards)
-      let score = 3 + getHighCard(hand, cards, true) + getHighCard(hand, cards, true, 2) + getHighCard(hand, cards, false);
+      let score = 3 + getHighCard(hand, cards, true) * 3 + getHighCard(hand, cards, true, 2) * 3 + getHighCard(hand, cards, false);
       return ["Two Pair", score];
     } 
     
     // Single Pair
     if(hasPair(cards).length >= 2){
       let hand = hasPair(cards)
-      let score = 2 + getHighCard(hand, cards, true);
+      let score = 2 + getHighCard(hand, cards, true) * 3;
       
-      for(let i = 0; i < Math.min(cards.length, 4); i++){
+      for(let i = 0; i < Math.min(cards.length, 5); i++){
         score = score + getHighCard(hand, cards, false, i)
       };
 
