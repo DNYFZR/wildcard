@@ -81,12 +81,12 @@ const TexasHoldEm: React.FC = () => {
   const hasFlush = (cards: (string | number)[][]): (string | number)[][] => {
     let scored = [] as (string | number)[][];
     
-    for (let cardSuit in ["CLUBS", "DIAMONDS", "HEARTS", "SPADES"]){
+    for (let cardSuit of ["CLUBS", "DIAMONDS", "HEARTS", "SPADES"]){
     
-      let suitedCards = cards.filter(([suit, _]) => String(suit) === cardSuit);
+      let suitedCards = cards.filter(([suit, _]) => suit === cardSuit);
       if ( suitedCards.length >= 5){
         return suitedCards.slice(-5);
-      }
+      } 
     } 
     return scored;
   };
