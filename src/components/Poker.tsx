@@ -348,7 +348,10 @@ const TexasHoldEm: React.FC = () => {
       <div className='game-hand'>
         {dealerCards && dealerCards.cards.length > 0 ? (
           <>
-            <h4 className='game-winner'>Dealer ( {dealerHand} - Strength: {dealerScore.toFixed(2)} )</h4>
+            <h4 className='game-hand-details'>
+              Dealer : {dealerHand} <br/>
+              Strength Rating : {dealerScore.toFixed(1)}
+            </h4>
             <DisplayHand cards={dealerCards.cards} />
 
             <div className='game-winner'>
@@ -374,7 +377,10 @@ const TexasHoldEm: React.FC = () => {
       <div className='game-hand'> 
         {playerCards && playerCards.cards.length > 0 ? (
           <> 
-            <h4 className='game-winner'>Player ( {playerHand} - Strength: {playerScore.toFixed(2)} )</h4>
+            <h4 className='game-hand-details'>
+              Player : {playerHand} <br/>
+              Strength Rating : {playerScore.toFixed(1)}
+            </h4>
             <DisplayHand cards={playerCards.cards} />
 
             <div className='game-winner'>
