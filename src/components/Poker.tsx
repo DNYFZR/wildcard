@@ -152,9 +152,10 @@ const TexasHoldEm: React.FC = () => {
     return allCards.filter(([s,v]) => hand.includes([s,v]) === withinHand).map(([_, v]) => v).at(-rank) as number / 100;
   };
 
-  const evaluateHand = (hand: [string, string][], acesHigh:boolean=true) => {
+  const evaluateHand = (hand: [string, string][]) => {
     // Still need to do : straights (aces high & low)
-    let cards = hand.map(([suit, val]) => [suit, cardValue(val, acesHigh)]).sort((a, b) => Number(a[1]) - Number(b[1]))
+    let cards = hand.map(([suit, val]) => [suit, cardValue(val, true)]).sort((a, b) => Number(a[1]) - Number(b[1]));
+    let cardsAceLow = hand.map(([suit, val]) => [suit, cardValue(val, false)]).sort((a, b) => Number(a[1]) - Number(b[1]));
     
     // Royal Flush
     if(hasStraight(hasFlush(cards)).length > 0 && hasStraight(hasFlush(cards)).slice(-1).at(1) as unknown === 14){
@@ -164,9 +165,9 @@ const TexasHoldEm: React.FC = () => {
     }
 
     // Striaght Flush
-    if(hasStraight(hasFlush(cards)).length > 0){
-      let hand = hasStraight(hasFlush(cards));
-      let score = 9 + getHighCard(hand, cards, true);
+    if(hasStraight(hasFlush(cardsAceLow)).length > 0){
+      let hand = hasStraight(hasFlush(cardsAceLow));
+      let score = 9 + getHighCard(hand, cardsAceLow, true);
       return ["Straight Flush", score]
     }
 
@@ -201,31 +202,36 @@ const TexasHoldEm: React.FC = () => {
       return ["Flush", score];
     }
 
-    // Straight
+    // Straight (aces high & low)
     if(hasStraight(cards).length > 0){
       let hand =  hasStraight(cards);
       return ["Straight", 5 + getHighCard(hand, cards, true)];
     }
 
+    if(hasStraight(cardsAceLow).length > 0){
+      let hand =  hasStraight(cardsAceLow);
+      return ["Straight", 5 + getHighCard(hand, cardsAceLow, true)];
+    }
+
     // Three of a kind
     if(hasTriple(cards).length > 0){
       let hand =  hasTriple(cards);
-      return ["Three of a Kind", 4 + getHighCard(hand, cards, true) + getHighCard(hand, cards, false) + getHighCard(hand, cards, false, 2)];
+      return ["Three of a Kind", 4 + getHighCard(hand, cards, true) * 3 + getHighCard(hand, cards, false) + getHighCard(hand, cards, false, 2)];
     }
 
     // Two Pair
     if(hasPair(cards).length >= 4){
       let hand = hasPair(cards)
-      let score = 3 + getHighCard(hand, cards, true) + getHighCard(hand, cards, true, 2) + getHighCard(hand, cards, false);
+      let score = 3 + getHighCard(hand, cards, true) * 3 + getHighCard(hand, cards, true, 2) * 3 + getHighCard(hand, cards, false);
       return ["Two Pair", score];
     } 
     
     // Single Pair
     if(hasPair(cards).length >= 2){
       let hand = hasPair(cards)
-      let score = 2 + getHighCard(hand, cards, true);
+      let score = 2 + getHighCard(hand, cards, true) * 3;
       
-      for(let i = 0; i < Math.min(cards.length, 4); i++){
+      for(let i = 0; i < Math.min(cards.length, 5); i++){
         score = score + getHighCard(hand, cards, false, i)
       };
 

@@ -5,7 +5,7 @@ import DisplayHand, { PlayingCardSet } from './Cards';
 
 const Blackjack: React.FC = () => {
   
-  const [nDecks, setNDecks] = useState<number>(6);
+  const nDecks = 6;
   const [deckID, setDeckID] = useState<string|null>();
   const [activeGame, setActiveGame] = useState<boolean>(false);
 
