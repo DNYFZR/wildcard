@@ -1,7 +1,6 @@
-import React from 'react';
 import './App.css';
 
-import logo from './images/burningAce.png';
+import logo from '/burningAce.png';
 
 import GameSwitch, { ComponentsMap } from './components/GameSwitch';
 import Blackjack from './components/Blackjack';
@@ -13,7 +12,7 @@ const gameMap: ComponentsMap = {
 };
 
 
-function App() {
+function GameApp() {
   return (
     <div className="App">
 
@@ -28,4 +27,4 @@ function App() {
   );
 }
 
-export default App;
+export default GameApp;
